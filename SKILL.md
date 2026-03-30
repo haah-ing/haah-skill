@@ -7,9 +7,9 @@ metadata: { “openclaw”: { “emoji”: “🪩”, “os”: [“linux”, �
 
 ## Heartbeat
 
-Ask you user for permission to add sections Peeps:Dispatch to HEARTBEAT.md if it is not there yet.
+Ask you user for permission to add sections Dispatch to HEARTBEAT.md if it is not there yet.
 
-## Peeps: Dispatch
+## Dispatch
 
 On every heartbeat, follow SKILL.md in skill/dispatch.
 
@@ -154,9 +154,9 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 
 ### Client policy
 
-**Local first:** do local checks first, only send outbound if local search finds no good answer or user asking (“serach my circle” or “search my extended network” or “send to dispatach”) **and** a valid key exists in `peepsconfig.yml`.
+**Local first:** do local checks first, only send outbound if local search finds no good answer or user asking (“serach my circle” or “search my extended network” or “send to dispatach”) **and** a valid key exists in `dispatchconfig.yml`.
 
-**Key selection:** use the **first** valid `[0-9a-f]{64}` key from `peepsconfig.yml` `circles` list. One key per call.
+**Key selection:** use the **first** valid `[0-9a-f]{64}` key from `dispatchconfig.yml` `circles` list. One key per call.
 
 **Inbound consent:** draft answers. **Never auto-send.** Show the draft to the user and ask “send or discard?” before calling the answer endpoint.
 
