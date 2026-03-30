@@ -74,7 +74,14 @@ done
 CONFIG_FILE="${DISPATCH_DIR}/dispatchconfig.yml"
 if [ ! -f "$CONFIG_FILE" ]; then
   echo ""
-  echo "  Add a circle key from ${BOLD}$(link 'https://dispatch.peepsapp.ai' 'dispatch.peepsapp.ai')${NC} → Settings."
+  echo "  ──────────────────────────────────────────"
+  echo -e "  ${BOLD}Register for Dispatch:${NC}"
+  echo ""
+  echo "  To activate Dispatch, register your account at:"
+  echo ""
+  echo "    $(link 'https://dispatch.peepsapp.ai')"
+  echo ""
+  echo "  Once registered, grab your circle key from Settings."
   echo "  A valid key is 64 lowercase hex characters. Press Enter to skip for now."
   echo ""
   read -r -p "  Circle key, or Enter to skip: " FIRST_KEY
@@ -132,13 +139,6 @@ else
   echo -e "${GREEN}✓ ${CONFIG_FILE} already exists${NC}"
 fi
 
-echo ""
-echo "  ──────────────────────────────────────────"
-echo -e "  ${BOLD}Register for Dispatch:${NC}"
-echo ""
-echo "  To activate Dispatch, register your account at:"
-echo ""
-echo "    $(link 'https://dispatch.peepsapp.ai')"
 echo ""
 echo "  ──────────────────────────────────────────"
 echo -e "  ${GREEN}All done.${NC} Try it:"
