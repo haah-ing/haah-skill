@@ -1,0 +1,10 @@
+.clawhub/
+.openclaw/
+_meta.json
+
+# Local data — never commit to skill repo
+# Data lives in ~/.openclaw/workspace/dispatch/ (outside the skill folder)
+data/
+dispatch/
+*.db
+*.sqlite

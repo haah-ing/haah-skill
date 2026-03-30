@@ -1,17 +1,16 @@
-—
+---
 name: Dispatch
-description: Sends requests do trusted circle of people and receives answers.
+description: Sends requests to trusted circle of people and receives answers.
 metadata: { “openclaw”: { “emoji”: “🪩”, “os”: [“linux”, “darwin”, “win32”] } }
-—
-
+---
 
 ## Heartbeat
 
-Ask you user for permission to add sections Peeps:Dispatch to HEARTBEAT.md if it is not there yet.
+Ask your user for permission to add sections Peeps:Dispatch to HEARTBEAT.md if it is not there yet.
 
 ## Peeps: Dispatch
 
-On every heartbeat, follow SKILL.md in skill/dispatch.
+On every heartbeat, follow the Dispatching section below.
 
 ## Folder Structure
 
@@ -22,10 +21,9 @@ On every heartbeat, follow SKILL.md in skill/dispatch.
 ├── dispatch-inbound.md
 ```
 
+## Dispatching
 
-## Appendix: Dispatch
-
-Dispatch lets your agent broadcast a natural-language query to everyone in your circles and receive answers from their agents — with attribution (first name + circle name).
+Dispatch lets your agent broadcast a natural-language query to everyone in your circles and receive answers from their agents — per permission and with attribution (first name + circle name).
 
 ### Setup
 
@@ -102,7 +100,7 @@ Response `200`:
 
 Each answer includes who it came from and which circle they’re in. Present it to the user as:
 
-> **Peter (via HK Network):** David Chen at Premium Motors in TST — he’s been in the HK sports car market for 15 years. Tell him Peter sent you.
+> **Maria (via HK Network):** David Chen at Premium Motors in TST — he’s been in the HK sports car market for 15 years. Tell him Maria sent you.
 
 Format: **”[from] (via [circle]):** [text]”. Always name the referrer — they vouched for this person through a trusted circle. An empty `answers` array means the request is still waiting.
 
@@ -154,13 +152,13 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 
 ### Client policy
 
-**Local first:** do local checks first, only send outbound if local search finds no good answer or user asking (“serach my circle” or “search my extended network” or “send to dispatach”) **and** a valid key exists in `peepsconfig.yml`.
+**Local first:** do local checks first, only send outbound if local search finds no good answer or user asking (“search my circle” or “search my extended network” or “send to dispatch”) **and** a valid key exists in `dispatchconfig.yml`.
 
-**Key selection:** use the **first** valid `[0-9a-f]{64}` key from `peepsconfig.yml` `circles` list. One key per call.
+**Key selection:** collect all valid `[0-9a-f]{64}` keys from `dispatchconfig.yml` `circles` list. One key per call. If exactly one valid key exists, use it silently. If more than one valid key exists, ask the user which circle to use — present the options by their `label` (fall back to the first 8 characters of the key when no label is set) — then use the chosen key.
 
 **Inbound consent:** draft answers. **Never auto-send.** Show the draft to the user and ask “send or discard?” before calling the answer endpoint.
 
-**Pending row cap:** keep at most **3** open rows in `dispatch-pending.md` and **3** in `dispatch-inbound.md`. Defer new work until a row clears.
+**Pending row cap:** keep at most **5** open rows in `dispatch-pending.md` and **5** in `dispatch-inbound.md`. Defer new work until a row clears.
 
 **Heartbeat cadence:** poll outbound + fetch inbox **once per heartbeat**. No tight loops.
 
@@ -189,7 +187,10 @@ Append one row per inbox item when you start drafting:
 Workflow per item:
 
 1. `GET /inbox` → find pending requests
-2. Draft answers
+2. Draft answers using appropriate tools:
+
+- for example, if request about people, like "Who can make me a good website?" use Peeps skill
+
 3. Show draft to user → **send or discard?**
 4. **Send** → `POST /inbox/<id>/answer` → delete ledger row
 5. **Discard** → `POST /inbox/<id>/skip` → delete ledger row
