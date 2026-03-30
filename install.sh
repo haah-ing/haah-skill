@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SKILL_REPO="git@github.com:Know-Your-People/dispatch-skill.git"
+SKILL_WEB="https://github.com/Know-Your-People/dispatch-skill"
 SKILL_RAW="https://raw.githubusercontent.com/Know-Your-People/dispatch-skill/main"
 SKILLS_DIR="${HOME}/.openclaw/workspace/skills/dispatch"
 DISPATCH_DIR="${HOME}/.openclaw/workspace/dispatch"
@@ -11,6 +12,10 @@ YELLOW=$'\033[1;33m'
 RED=$'\033[0;31m'
 BOLD=$'\033[1m'
 NC=$'\033[0m'
+
+link() {
+  printf '\033]8;;%s\033\\%s\033]8;;\033\\' "$1" "${2:-$1}"
+}
 
 echo ""
 echo -e "${GREEN}  ██████╗ ██╗███████╗██████╗  █████╗ ████████╗ ██████╗██╗  ██╗${NC}"
@@ -28,7 +33,7 @@ echo ""
 if ! command -v openclaw &> /dev/null; then
   echo -e "${RED}✗ OpenClaw not found.${NC}"
   echo ""
-  echo "  Install OpenClaw first: https://openclaw.ai"
+  echo "  Install OpenClaw first: $(link 'https://openclaw.ai')"
   echo ""
   exit 1
 fi
@@ -69,7 +74,7 @@ done
 CONFIG_FILE="${DISPATCH_DIR}/dispatchconfig.yml"
 if [ ! -f "$CONFIG_FILE" ]; then
   echo ""
-  echo "  Add a circle key from ${BOLD}dispatch.peepsapp.ai${NC} → Settings."
+  echo "  Add a circle key from ${BOLD}$(link 'https://dispatch.peepsapp.ai' 'dispatch.peepsapp.ai')${NC} → Settings."
   echo "  A valid key is 64 lowercase hex characters. Press Enter to skip for now."
   echo ""
   read -r -p "  Circle key, or Enter to skip: " FIRST_KEY
@@ -129,12 +134,19 @@ fi
 
 echo ""
 echo "  ──────────────────────────────────────────"
+echo -e "  ${BOLD}Register for Dispatch:${NC}"
+echo ""
+echo "  To activate Dispatch, register your account at:"
+echo ""
+echo "    $(link 'https://dispatch.peepsapp.ai')"
+echo ""
+echo "  ──────────────────────────────────────────"
 echo -e "  ${GREEN}All done.${NC} Try it:"
 echo ""
 echo '  "Search my circle — who knows a good architect in Singapore?"'
 echo '  "Ask my network if anyone can help with fundraising in London."'
 echo '  "Check if there are any new answers to my open questions."'
 echo ""
-echo "  Sign in and manage circles: https://dispatch.peepsapp.ai"
-echo "  Source: ${SKILL_REPO}"
+echo "  Sign in and manage circles: $(link 'https://dispatch.peepsapp.ai')"
+echo "  Source: $(link "$SKILL_WEB" "$SKILL_REPO")"
 echo ""
