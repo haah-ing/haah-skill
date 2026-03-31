@@ -104,6 +104,8 @@ Each answer includes who it came from and which circle they’re in. Present it 
 
 Format: **”[from] (via [circle]):** [text]”. Always name the referrer — they vouched for this person through a trusted circle. An empty `answers` array means the request is still waiting.
 
+Surface reply to your human, they asked for it!
+
 #### Check inbox (inbound)
 
 ```
