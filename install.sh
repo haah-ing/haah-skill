@@ -81,61 +81,22 @@ if [ ! -f "$CONFIG_FILE" ]; then
   echo ""
   echo "    $(link 'https://dispatch.peepsapp.ai')"
   echo ""
-  echo "  Once registered, grab your circle key from Settings."
+  echo "  Once registered, grab your key from Settings."
   echo "  A valid key is 64 lowercase hex characters. Press Enter to skip for now."
   echo ""
-  read -r -p "  Circle key, or Enter to skip: " FIRST_KEY
-
-  CIRCLE_KEYS=()
-  CIRCLE_LABELS=()
-
-  if [ -n "$FIRST_KEY" ]; then
-    read -r -p "  Label for this circle (e.g. hk-network), or Enter to skip: " FIRST_LABEL
-    CIRCLE_KEYS+=("$FIRST_KEY")
-    CIRCLE_LABELS+=("$FIRST_LABEL")
-
-    while true; do
-      echo ""
-      echo "  1) Add another circle"
-      echo "  2) Done"
-      read -r -p "  Choice [1-2, default 2]: " CIRCLE_MENU
-      CIRCLE_MENU=${CIRCLE_MENU:-2}
-      [ "$CIRCLE_MENU" != "1" ] && break
-      read -r -p "  Circle key: " KEY
-      if [ -z "$KEY" ]; then
-        echo -e "${YELLOW}  Empty key — finishing.${NC}"
-        break
-      fi
-      read -r -p "  Label for this circle (e.g. hk-network), or Enter to skip: " LABEL
-      CIRCLE_KEYS+=("$KEY")
-      CIRCLE_LABELS+=("$LABEL")
-    done
-  fi
+  read -r -p "  Key, or Enter to skip: " USER_KEY
 
   {
-    if [ ${#CIRCLE_KEYS[@]} -eq 0 ]; then
-      echo "circles:
-      - key: a3f8...c921 (replace with your circle key)
-        label: My Peeps (replace with your circle label)
-      "
+    if [ -z "$USER_KEY" ]; then
+      echo "key: a3f8...c921 # replace with your key"
     else
-      echo "circles:"
-      i=0
-      for KEY in "${CIRCLE_KEYS[@]}"; do
-        ESC_KEY=$(printf '%s' "$KEY" | sed "s/'/''/g")
-        echo "  - key: '${ESC_KEY}'"
-        LABEL="${CIRCLE_LABELS[$i]}"
-        if [ -n "$LABEL" ]; then
-          ESC_LABEL=$(printf '%s' "$LABEL" | sed "s/'/''/g")
-          echo "    label: '${ESC_LABEL}'"
-        fi
-        i=$((i + 1))
-      done
+      ESC_KEY=$(printf '%s' "$USER_KEY" | sed "s/'/''/g")
+      echo "key: '${ESC_KEY}'"
     fi
   } > "$CONFIG_FILE"
 
   echo -e "${GREEN}✓ Created ${CONFIG_FILE}${NC}"
-  if [ ${#CIRCLE_KEYS[@]} -eq 0 ]; then
+  if [ -z "$USER_KEY" ]; then
     echo -e "${YELLOW}  No key added — edit ${CONFIG_FILE} to add one later.${NC}"
   fi
 else
