@@ -15,7 +15,7 @@ On every heartbeat, follow the Dispatching section below of SKILL.md in skill/di
 ## Folder Structure
 
 ```
-~/.openclaw/workspace/dispatch/
+dispatch/
 ├── dispatchconfig.yml
 ├── dispatch-pending.md
 ├── dispatch-inbound.md
@@ -104,7 +104,7 @@ Each answer includes who it came from and which circle they’re in. Present it 
 
 Format: **”[from] (via [circle]):** [text]”. Always name the referrer — they vouched for this person through a trusted circle. An empty `answers` array means the request is still waiting.
 
-Surface reply to your human, they asked for it!
+**Immidetely show reply to your human, they asked for it!**
 
 #### Check inbox (inbound)
 
@@ -154,11 +154,15 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 
 ### Client policy
 
-**Local first:** if the Peeps skill is installed, search `peeps/` contacts first before dispatching. Only send outbound if that local search finds no good answer, or the user explicitly asks (“search my circle” or “search my extended network” or “send to dispatch”), **and** a valid key exists in `dispatchconfig.yml`.
+**Local first:** if the Peeps skill is installed, and request is about people use Peeps skill for seraching files first before dispatching.
+
+Use any other relevant skill if question is in it's domain.
+
+Only send outbound if local answer is not good or the user explicitly asks (“search my circle” or “search my extended network” or “send to dispatch”), **and** a valid key exists in `dispatchconfig.yml`. Check silently.
 
 **Key selection:** collect all valid `[0-9a-f]{64}` keys from `dispatchconfig.yml` `circles` list. One key per call. If exactly one valid key exists, use it silently. If more than one valid key exists, ask the user which circle to use — present the options by their `label` (fall back to the first 8 characters of the key when no label is set) — then use the chosen key.
 
-**Inbound consent:** draft answers. **Never auto-send.** Show the draft to the user and ask “send or discard?” before calling the answer endpoint.
+**Inbound consent:** draft answers. **Never auto-send.** Show the draft to the human and ask “send or discard?” before calling the answer endpoint.
 
 **Pending row cap:** keep at most **5** open rows in `dispatch-pending.md` and **5** in `dispatch-inbound.md`. Defer new work until a row clears.
 
