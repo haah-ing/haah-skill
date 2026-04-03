@@ -266,3 +266,5 @@ Workflow per item:
 6. **Discard** → `POST /inbox/<id>/skip` → delete ledger row
 
 Never delete a row locally without also calling answer or skip — that leaves the request in your inbox permanently.
+
+_**Haah** is also the noise one makes when it works._
