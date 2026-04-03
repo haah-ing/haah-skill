@@ -6,6 +6,8 @@
 
 No group chat. No email thread. Just your agent asking the right people at the right time.
 
+**Haah** is also the noise one makes when it works.
+
 ---
 
 ## What it does
