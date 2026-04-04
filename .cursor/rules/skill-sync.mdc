@@ -1,0 +1,11 @@
+---
+description: Keep SKILL.md and skills/haah/SKILL.md in sync as exact copies
+globs: SKILL.md,skills/haah/SKILL.md
+alwaysApply: false
+---
+
+# SKILL.md Sync Requirement
+
+`SKILL.md` and `skills/haah/SKILL.md` must always be **exact copies** of each other for compatibility reasons.
+
+Whenever you edit one of these files, immediately apply the identical change to the other file. Never let them diverge.
