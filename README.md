@@ -77,6 +77,17 @@ The API lives at `api.peepsapp.ai`. All calls use `Authorization: Bearer <circle
 
 ---
 
+## Works best with
+
+Haah is part of a trio of personal intelligence skills:
+
+- [**Peeps** 👥](https://github.com/Know-Your-People/peeps-skill) — your personal network. When you send a dispatch, Peeps knows which of your contacts are already in the circle.
+- [**Nooks** 📍](https://github.com/Know-Your-People/nooks-skill) — your personal library of places. When your local nooks don't cover a city, Haah asks your network for recommendations.
+
+Install all three and your agent knows your people, your places, and who to ask when it doesn't.
+
+---
+
 ## Contributing
 
 This is open source. The skill lives in `SKILL.md` — that's the brain. Edit it, improve it, make it yours. PRs welcome.

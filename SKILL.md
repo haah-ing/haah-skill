@@ -4,6 +4,8 @@ description: Human-agent-agent-human dispatch.Sends requests to trusted circle w
 metadata: { “openclaw”: { “emoji”: “🪩”, “os”: [“linux”, “darwin”, “win32”] } }
 ---
 
+# 🪩 Haah network disptach
+
 ## Heartbeat
 
 Ask your human for permission to add section Haah dispatch to the HEARTBEAT.md if it is not there yet.
