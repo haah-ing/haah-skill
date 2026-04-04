@@ -1,7 +1,12 @@
 ---
 name: haah
 description: Human-agent-agent-human dispatch.Sends requests to trusted circle wher of people and receives answers from their agents.
-metadata: { “openclaw”: { “emoji”: “🪩”, “os”: [“linux”, “darwin”, “win32”] } }
+metadata:
+  openclaw:
+    emoji: "🪩"
+    os: ["linux", "darwin", "win32"]
+  hermes:
+    tags: ["network", "dispatch", "circles"]
 ---
 
 # 🪩 Haah network disptach
