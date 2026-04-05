@@ -225,8 +225,6 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 - Request is about **people** → search Peeps first if installed
 - Request is about **books or reading** → search Pages first if installed
 - Request is about **shows, music, podcasts, or YouTube** → search Vibes first if installed
-- Request is about **a topic you're actively researching** → check Digs first if installed
-
 Use any other relevant skill if question is in its domain.
 
 Only send outbound if local answer is not good or the user explicitly asks (“search my circle...” or “search my extended network...” or “dispatch that...” or "haah:"), **and** a valid key exists in `haahconfig.yml`. Check silently.
