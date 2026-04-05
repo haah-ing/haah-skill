@@ -220,7 +220,11 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 
 ### Client policy
 
-**Local first:** if the Peeps skill is installed, and request is about people use Peeps skill for seraching files first before dispatching.
+**Local first:** check relevant installed skills before dispatching:
+
+- Request is about **people** → search Peeps first if installed
+- Request is about **books or reading** → search Pages first if installed
+- Request is about **shows, music, podcasts, or YouTube** → search Vibes first if installed
 
 Use any other relevant skill if question is in its domain.
 
@@ -267,12 +271,24 @@ Workflow per item:
 3. When presenting to your human, always include who is asking: "**[from]** asks: [query]"
 4. Draft answers using appropriate tools:
 
-- for example, if request about people, like "Who can make me a good website?" use Peeps skill
+- if request about people, like "Who can make me a good website?" → use Peeps skill if installed
+- if request about books or reading, like "Anyone read a good book on management?" → check Pages skill if installed
+- if request about shows, music, or podcasts, like "Any good podcast about AI?" → check Vibes skill if installed
 
 5. Show draft to user → ask **send or discard?**
 6. **Send** → `POST /inbox/<id>/answer` → delete ledger row
 7. **Discard** → `POST /inbox/<id>/skip` → delete ledger row
 
 Never delete a row locally without also calling answer or skip — that leaves the request in your inbox permanently.
+
+## Updating
+
+To update this skill to the latest version, fetch the new SKILL.md from GitHub and replace this file:
+
+```
+https://raw.githubusercontent.com/Know-Your-People/haah-skill/main/SKILL.md
+```
+
+---
 
 _**Haah** is also the noise one makes when it works._
