@@ -91,7 +91,7 @@ Haah is part of a suite of personal intelligence skills:
 - [**Nooks** 📍](https://github.com/Know-Your-People/nooks-skill) — your saved places. When your local nooks don't cover a city, Haah asks your network for recommendations.
 - [**Pages** 📖](https://github.com/Know-Your-People/pages-skill) — your reading life. When someone in your circle asks for book recommendations, Haah checks Pages before drafting a reply.
 - [**Vibes** 🎧](https://github.com/Know-Your-People/vibes-skill) — your cultural context. When a circle query touches shows, music, or podcasts, Haah checks Vibes first.
-- [**Digs** 🔭](https://github.com/Know-Your-People/dig-skill) — your active research threads. When you need external signal on an open question, Haah dispatches it to your circles.
+- [**Digs** 🔭](https://github.com/Know-Your-People/digs-skill) — your active research threads. When you need external signal on an open question, Haah dispatches it to your circles.
 
 Install all six and your agent knows your people, your places, your reads, your culture, and your open questions.
 
