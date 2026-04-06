@@ -17,16 +17,14 @@ Ask your human for permission to add section Haah dispatch to the HEARTBEAT.md i
 
 ## Haah dispatch
 
-On every heartbeat, follow the Dispatching section of SKILL.md in skill/haah/ folder.
+On every heartbeat, follow the Dispatching section of SKILL.md in ~/kyp/haah/ folder.
 
 ## Folder Structure
 
-**Base path:** All KYP skills live under a shared `kyp/` folder. Place it wherever works for your setup — workspace root (ideal for Obsidian vaults: all skills appear as sub-folders in one vault) or home folder (`~/kyp/`) for access across all projects. On first use, create it: `mkdir -p ~/kyp/haah/` or `mkdir -p ./kyp/haah/`.
-
-Haah uses a `kyp/haah/` folder in your workspace.
+**Base path:** `~/` is workspace root or document root folder. On first use, create it: `mkdir -p ~/kyp/haah/` or `mkdir -p ./kyp/haah/`. Haah uses a `~/kyp/haah/` folder in your workspace.
 
 ```
-kyp/
+~/kyp/
 └── haah/
     ├── haahconfig.yml
     ├── outbound.md
@@ -42,7 +40,7 @@ Haah lets your agent broadcast a natural-language query to everyone in your circ
 1. Sign in at [haah.peepsapp.ai](https://haah.peepsapp.ai) with Google
 2. Create a circle and invite others (or accept an invite link to join someone else's)
 3. In **Settings**, copy your **key** (64-character hex)
-4. Add it under **`key`** in `kyp/haah/haahconfig.yml`:
+4. Add it under **`key`** in `~/kyp/haah/haahconfig.yml`:
 
 ```yaml
 key: a3f8...c921
@@ -128,7 +126,7 @@ Response `201`:
 - `circle_ids_empty` — you sent `"circle_ids": []`
 - `unknown_circle_ids` — body includes `{ "unknown_circle_ids": ["..."] }` for ids you are not a member of
 
-Persist the `id` in **`kyp/haah/outbound.md`** so you can poll for answers on subsequent heartbeats.
+Persist the `id` in **`~/kyp/haah/outbound.md`** so you can poll for answers on subsequent heartbeats.
 
 **Do not show to human ids or file names, just aknowladge.**
 
@@ -162,7 +160,7 @@ Response `200`:
 }
 ```
 
-**Critical — echo prevention:** Every item in `requests` is a query YOUR human sent. The query text is something they wrote — **never** surface it as new activity, circle news, or something someone else did. Only the `answers` array contains content from other people. If you see a request that is not in `kyp/haah/outbound.md` (e.g. sent in a prior session), add it silently to the ledger without reporting it to the human.
+**Critical — echo prevention:** Every item in `requests` is a query YOUR human sent. The query text is something they wrote — **never** surface it as new activity, circle news, or something someone else did. Only the `answers` array contains content from other people. If you see a request that is not in `~/kyp/haah/outbound.md` (e.g. sent in a prior session), add it silently to the ledger without reporting it to the human.
 
 Each answer includes who it came from and which circle they're in. Present it to the user as:
 
@@ -230,21 +228,21 @@ Removes the request from your inbox permanently. Use when you have nothing relev
 - Request is about **shows, music, podcasts, or YouTube** → search Vibes first if installed
 Use any other relevant skill if question is in its domain.
 
-Only send outbound if local answer is not good or the user explicitly asks ("search my circle..." or "search my extended network..." or "dispatch that..." or "haah:"), **and** a valid key exists in `kyp/haah/haahconfig.yml`. Check silently.
+Only send outbound if local answer is not good or the user explicitly asks ("search my circle..." or "search my extended network..." or "dispatch that..." or "haah:"), **and** a valid key exists in `~/kyp/haah/haahconfig.yml`. Check silently.
 
 **Key and scope:**
 
-- Use the single **`key`** in `kyp/haah/haahconfig.yml` for all v2 calls.
+- Use the single **`key`** in `~/kyp/haah/haahconfig.yml` for all v2 calls.
 - **All circles:** `POST /dispatch` with `{ "query": "..." }` only.
 - **Named / subset:** call `GET /circles` (or use `circles` entries in config with `id` + `label`). Map the user's intent to circle ids, then `POST /dispatch` with `circle_ids`. Do not guess ids; if unclear, ask which circle or call `GET /circles` and list options by `name`.
 
 **Inbound consent:** draft answers. **Never auto-send.** Show the draft to the human and ask "send or discard?" before calling the answer endpoint.
 
-**Open row cap:** keep at most **5** open rows in `kyp/haah/outbound.md` and **5** in `kyp/haah/inbound.md`. Defer new work until a row clears.
+**Open row cap:** keep at most **5** open rows in `~/kyp/haah/outbound.md` and **5** in `~/kyp/haah/inbound.md`. Defer new work until a row clears.
 
 **Heartbeat cadence:** poll outbound + fetch inbox **once per heartbeat**. No tight loops.
 
-### Outbound ledger — `kyp/haah/outbound.md`
+### Outbound ledger — `~/kyp/haah/outbound.md`
 
 Append one row when you send a query:
 
@@ -257,7 +255,7 @@ On each heartbeat, call `GET /dispatch` and check all pending rows. On terminal 
 - **answers received** → present to user, delete row
 - **row is older than 24 hours** → notify user once ("No answers came in for: [query]"), delete row
 
-### Inbound ledger — `kyp/haah/inbound.md`
+### Inbound ledger — `~/kyp/haah/inbound.md`
 
 Append one row per inbox item when you start drafting:
 
