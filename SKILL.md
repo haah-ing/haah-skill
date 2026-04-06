@@ -63,7 +63,7 @@ Haah lets you broadcast a natural-language query to everyone in your human circl
 
 ### API base URL
 
-**`https://api.peepsapp.ai/v2`**
+**`https://api.knowyourpeople.org/v2`**
 
 Use **v2** for all calls.
 
