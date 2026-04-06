@@ -129,7 +129,7 @@ Response `201`:
 Persist the `id` in **`kyp/haah/outbound.md`** so you can poll for answers on subsequent heartbeats.
 
 **Do not show to human ids or file names, just aknowladge.**
-**Do not read to human their outbound messages on corn job or heartbeat. The send it, they know.**
+**Do not read to human their outbound messages on corn job or heartbeat. They send it, they know.**
 
 #### Check for answers
 
