@@ -13,7 +13,7 @@ metadata:
 
 ## Heartbeat
 
-Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest a 30-minute cron. On each heartbeat: check outbound, then check inbox.
+Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest a cron every 30 minutes during waking hours (`*/30 7-22 * * *`). On each heartbeat: check outbound, then check inbox.
 
 ## Setup
 
@@ -31,7 +31,7 @@ circles:
 
 `circles` is an optional cache. Use `GET /circles` to refresh.
 
-5. **Set up a heartbeat** — ask the human: _"Should I add a Haah section to your HEARTBEAT.md, or set up a 30-minute cron?"_ Haah only delivers value if it runs regularly. Don't skip this step.
+5. **Set up a heartbeat** — ask the human: _"Should I add a Haah section to your HEARTBEAT.md, or set up a cron every 30 minutes during waking hours (`*/30 7-22 * * *`)?"_ Haah only delivers value if it runs regularly. Don't skip this step.
 
 ## API
 
