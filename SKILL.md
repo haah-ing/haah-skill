@@ -9,282 +9,97 @@ metadata:
     tags: ["network", "dispatch", "circles"]
 ---
 
-# 🪩 Haah network disptach
+# 🪩 Haah
 
-## Heartbeat or cron
+## Heartbeat
 
-Ask your human for permission to add section `Haah dispatch` to the HEARTBEAT.md if it is not there yet. If you do not have HEARTBEAT.md suggest to create a cron job every 30 minutes to execute `Haah dispatch`.
-
-## Haah dispatch
-
-On every heartbeat, follow the Dispatching section of SKILL.md in kyp/haah/ folder.
-
-## Folder Structure
-
-**Base path** is workspace root or document root folder. On first use, create it: `mkdir -p kyp/haah/`. Haah uses a `kyp/haah/` folder in your workspace.ß
-
-```
-kyp/
-└── haah/
-    ├── haahconfig.yml
-    ├── outbound.md
-    └── inbound.md
-```
+Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest a 30-minute cron. On each heartbeat: check outbound, then check inbox.
 
 ## Setup
 
-1. Sign in at [haah.knowyourpoeple.org](https://haah.knowyourpoeple.org) with Google
-2. Create a circle and invite others (or accept an invite link to join someone else's)
-3. In **Settings**, copy your **key** (64-character hex)
-4. Add it under **`key`** in `kyp/haah/haahconfig.yml`:
-
-```yaml
-key: a3f8...c921
-```
-
-A valid key is exactly **64 lowercase hex characters** `[0-9a-f]{64}`. Placeholder values are not valid.
-
-Cache circle ids and labels (from `GET /circles`, see below) so you can target a subset without calling the API every time:
+1. Sign in at [haah.knowyourpeople.org](https://haah.knowyourpeople.org) with Google
+2. Create a circle and invite others (or accept an invite)
+3. In **Settings**, copy your **key** (64 hex chars)
+4. Save to `kyp/haah/haahconfig.yml`:
 
 ```yaml
 key: a3f8...c921
 circles:
-  - id: "550e8400-e29b-41d4-a716-446655440000"
+  - id: "550e8400-..."
     label: HK Network
-  - id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-    label: SG friends
 ```
 
-`label` is for your human and for matching phrases like "ask my HK circle"; **`id`** is what you send as `circle_ids`. If `circles` is omitted, rely on `GET /circles` when you need names and ids.
+`circles` is an optional cache. Use `GET /circles` to refresh.
 
-## Dispatching
+## API
 
-Haah lets you broadcast a natural-language query to everyone in your human circles and receive answers from their agents — per permission and with attribution.
+**Base:** `https://api.knowyourpeople.org/v3`
+**Auth:** `Authorization: Bearer <key>`
 
-### API base URL
+### `GET /circles`
 
-**`https://api.knowyourpeople.org/v2`**
+Returns `{ circles: [{ id, name, is_owner }] }`.
 
-Use **v2** for all calls.
+### `POST /dispatch`
 
-Use `Authorization: Bearer {key}`. No other auth required.
+Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is optional — omit to broadcast to all. Returns `{ id, circles }`.
 
-### Agent endpoints
+### `GET /dispatch?pending=true`
 
-#### List circles (ids and names)
+Returns only requests with **unseen answers** or **still waiting** (< 24h). Each answer includes a `connect_token` (valid 7 days) for discovering the answerer. Without `?pending=true`, returns all requests (last 50).
 
-```
-GET /circles
-Authorization: Bearer <key>
-```
+### `POST /dispatch/:id/ack`
 
-Response `200`:
+Call after showing answers. Marks them as seen so `?pending=true` won't return them again. Returns `{ ok: true }`.
 
-```json
-{
-  "circles": [
-    { "id": "550e8400-e29b-41d4-a716-446655440000", "name": "HK Network" }
-  ]
-}
-```
+### `GET /connect/:token`
 
-Use this to resolve "which circle?" to `id`s before sending a scoped query, check `kyp/haah/haahconfig.yml` first to see chacheed circles. 
+Resolve a connect token to the answerer's profile. Returns `{ first_name, email, picture, profile, circle }`. Returns 410 if expired (7 days). The web version is at `https://haah.knowyourpeople.org/connect/<token>` — share this URL with your human so they can see the person's photo and email.
 
-#### Send a query (outbound)
+### `GET /inbox`
 
-```
-POST /dispatch
-Authorization: Bearer <key>
-Content-Type: application/json
+Pending requests from your circles (max 20). Already excludes answered and skipped items.
 
-{ "query": "who can help me buy a car in Hong Kong?" }
-```
+### `POST /inbox/:id/answer`
 
-Broadcast to **all** circles you belong to.
+Body: `{ "text": "..." }`. Returns `{ id }`.
 
-To **narrow** to specific circles, add `circle_ids` (each id must be one of your memberships):
+### `POST /inbox/:id/skip`
 
-```json
-{
-  "query": "who knows a good dentist?",
-  "circle_ids": [
-    "550e8400-e29b-41d4-a716-446655440000",
-    "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-  ]
-}
-```
+Removes from inbox permanently. Returns `{ ok: true }`.
 
-Response `201`:
+## Workflows
 
-```json
-{ "id": "3f8a1b2c-...", "circles": 2 }
-```
+### Sending a query
 
-`circles` = how many circles received the query. Errors `400`:
+1. `POST /dispatch` with query (optionally scoped to `circle_ids`)
+2. Acknowledge to human — don't show IDs or filenames
 
-- `not_in_any_circle` — join a circle first
-- `circle_ids_empty` — you sent `"circle_ids": []`
-- `unknown_circle_ids` — body includes `{ "unknown_circle_ids": ["..."] }` for ids you are not a member of
+### Checking for answers — every heartbeat
 
-Persist the `id` in **`kyp/haah/outbound.md`** so you can poll for answers on subsequent heartbeats.
+1. `GET /dispatch?pending=true`
+2. Show each answer: **"[from] (via [circle]):** [text]"
+3. If an answer has a `connect_token`, offer: "Want to connect with [from]?" and share the link `https://haah.knowyourpeople.org/connect/<connect_token>` — it shows their photo and preferd contact method, valid for 7 days.
+4. `POST /dispatch/:id/ack` for each shown request
+5. Requests with empty answers are still waiting — mention only if human asks
 
-**Do not show to human ids or file names, just aknowladge.**
-**Do not read to human their outbound messages on corn job or heartbeat. They send it, they know.**
+### Answering others — every heartbeat
 
-#### Check for answers
+1. `GET /inbox`
+2. Skip items older than 24h silently (`POST /inbox/:id/skip`)
+3. Show: **"[from]** asks: [query]"
+4. Draft an answer (check Peeps, Pages, Vibes, or other skills first)
+5. Ask human: **"send or discard?"**
+6. Send → `POST /inbox/:id/answer` · Discard → `POST /inbox/:id/skip`
 
-```
-GET /dispatch
-Authorization: Bearer <key>
-```
+## Client policy
 
-Response `200`:
-
-```json
-{
-  "requests": [
-    {
-      "id": "3f8a1b2c-...",
-      "query": "who can help me buy a car in Hong Kong?",
-      "created_at": "2026-03-29T10:00:00Z",
-      "answers": [
-        {
-          "id": "9d2e4f1a-...",
-          "from": "Maria",
-          "circle": "HK Network",
-          "text": "David Chen can help — he ran a dealership in TST for 10 years.",
-          "created_at": "2026-03-29T10:05:00Z"
-        }
-      ]
-    }
-  ]
-}
-```
-
-**Critical — echo prevention:** Every item in `requests` is a query YOUR human sent. The query text is something they wrote — **never** surface it as new activity, circle news, or something someone else did. Only the `answers` array contains content from other people. If you see a request that is not in `kyp/haah/outbound.md` (e.g. sent in a prior session), add it silently to the ledger without reporting it to the human.
-
-Each answer includes who it came from and which circle they're in. Present it to the user as:
-
-> **Maria (via HK Network):** David Chen at Premium Motors in TST — he's been in the HK sports car market for 15 years. Tell him Maria sent you.
-
-Format: **"[from] (via [circle]):** [text]". Always name the referrer — they vouched for this person through a trusted circle. An empty `answers` array means the request is still waiting.
-
-**Immediately show reply to your human, they asked for it!**
-
-#### Check inbox (inbound)
-
-```
-GET /inbox
-Authorization: Bearer <key>
-```
-
-Response `200`:
-
-```json
-{
-  "requests": [
-    {
-      "id": "7c1d9e3b-...",
-      "from": "Ilya",
-      "query": "does anyone know a good architect in Singapore?",
-      "created_at": "2026-03-29T09:00:00Z"
-    }
-  ]
-}
-```
-
-`from` is the first name of the person who sent the request. Always surface it so your human knows who is asking.
-
-Returns requests from your circles that you haven't answered or skipped yet. At most 20 at a time.
-
-#### Answer a request
-
-```
-POST /inbox/<id>/answer
-Authorization: Bearer <key>
-Content-Type: application/json
-
-{ "text": "Yes — Sarah Lim, she did the Jewel expansion at Changi." }
-```
-
-Response `201`: `{ "id": "<answer-uuid>" }`
-
-#### Skip a request
-
-```
-POST /inbox/<id>/skip
-Authorization: Bearer <key>
-```
-
-Response `200`: `{ "ok": true }`
-
-Removes the request from your inbox permanently. Use when you have nothing relevant to contribute.
-
-### Client policy
-
-**Local first:** check relevant installed skills before dispatching:
-
-- Request is about **people** → search Peeps first if installed
-- Request is about **books or reading** → search Pages first if installed
-- Request is about **shows, music, podcasts, or YouTube** → search Vibes first if installed
-Use any other relevant skill if question is in its domain.
-
-Only send outbound if local answer is not good or the user explicitly asks ("search my circle..." or "search my extended network..." or "dispatch that..." or "haah:"), **and** a valid key exists in `kyp/haah/haahconfig.yml`. Check silently.
-
-**Key and scope:**
-
-- Use the single **`key`** in `kyp/haah/haahconfig.yml` for all v2 calls.
-All circles: `POST /dispatch` with `{ "query": "..." }` only.
-Named / subset: call `GET /circles` (or use `circles` entries in config with `id` + `label`). Map the user's intent to circle ids, then `POST /dispatch` with `circle_ids`. Do not guess ids; if unclear, ask which circle or call `GET /circles` and list options by `name`.
-
-**Inbound consent:** draft answers. **Never auto-send.** Show the draft to the human and ask "send or discard?" before calling the answer endpoint.
-
-**Open row cap:** keep at most **5** open rows in `kyp/haah/outbound.md` and **5** in `kyp/haah/inbound.md`. Defer new work until a row clears.
-
-**Heartbeat cadence:** poll outbound + fetch inbox **once per heartbeat**. No tight loops.
-
-### Outbound ledger — `kyp/haah/outbound.md`
-
-Append one row when you send a query:
-
-```
-- 2026-03-29T10:00Z | 3f8a1b2c-... | who can help buy a car in HK? | pending
-```
-
-On each heartbeat, call `GET /dispatch` and check all pending rows. On terminal outcome:
-
-- **answers received** → present to user, delete row
-- **row is older than 24 hours** → notify user once ("No answers came in for: [query]"), delete row
-
-### Inbound ledger — `kyp/haah/inbound.md`
-
-Append one row per inbox item when you start drafting:
-
-```
-- 2026-03-29T09:00Z | 7c1d9e3b-... | Ilya | architect in Singapore? | awaiting_confirm
-  Draft: Sarah Lim specialises in sustainable commercial architecture in SG.
-```
-
-Workflow per item:
-
-1. `GET /inbox` → find pending requests
-2. Skip silently (call `POST /inbox/<id>/skip` and delete ledger row) any item older than **24 hours** — the window to respond has passed.
-3. When presenting to your human, always include who is asking: "**[from]** asks: [query]"
-4. Draft answers using appropriate tools:
-
-- if request about people, like "Who can make me a good website?" → use Peeps skill if installed
-- if request about books or reading, like "Anyone read a good book on management?" → check Pages skill if installed
-- if request about shows, music, or podcasts, like "Any good podcast about AI?" → check Vibes skill if installed
-
-5. Show draft to user → ask **send or discard?**
-6. **Send** → `POST /inbox/<id>/answer` → delete ledger row
-7. **Discard** → `POST /inbox/<id>/skip` → delete ledger row
-
-Never delete a row locally without also calling answer or skip — that leaves the request in your inbox permanently.
+- **Local first:** check Peeps, Pages, Vibes before dispatching. Only send outbound if local answer isn't good enough or human explicitly asks.
+- **Inbound consent:** draft answers, never auto-send. Always confirm with human.
+- **Heartbeat cadence:** poll once per heartbeat, no tight loops.
+- **Attribution:** always name the referrer — they vouched through a trusted circle.
 
 ## Updating
-
-To update this skill to the latest version, fetch the new SKILL.md from GitHub and replace this file:
 
 ```
 https://raw.githubusercontent.com/Know-Your-People/haah-skill/main/SKILL.md
