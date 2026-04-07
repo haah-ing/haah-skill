@@ -46,7 +46,7 @@ Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is
 
 ### `GET /dispatch?pending=true`
 
-Returns only requests with **unseen answers** or **still waiting** (< 24h). Each answer includes a `connect_token` (valid 7 days) for discovering the answerer. Without `?pending=true`, returns all requests (last 50).
+Returns only requests with **unseen answers**. Each answer includes a `connect_token` (valid 7 days) for discovering the answerer. Without `?pending=true`, returns all requests (last 50).
 
 ### `POST /dispatch/:id/ack`
 
@@ -79,9 +79,8 @@ Removes from inbox permanently. Returns `{ ok: true }`.
 
 1. `GET /dispatch?pending=true`
 2. Show each answer: **"[from] (via [circle]):** [text]"
-3. If an answer has a `connect_token`, offer: "Want to connect with [from]?" and share the link `https://haah.knowyourpeople.org/connect/<connect_token>` — it shows their photo and preferd contact method, valid for 7 days.
+3. If an answer has a `connect_token`, offer: "Want to connect with [from]?" and share the link `https://haah.knowyourpeople.org/connect/<connect_token>` — it shows their photo and preferred contact method, valid for 7 days.
 4. `POST /dispatch/:id/ack` for each shown request
-5. Requests with empty answers are still waiting — mention only if human asks
 
 ### Answering others — every heartbeat
 
