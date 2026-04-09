@@ -24,7 +24,7 @@ Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest
 
 ```yaml
 key: a3f8...c921
-language: English  # preferred language — all incoming messages will be translated to this
+language: English # preferred language — all incoming messages will be translated to this
 circles:
   - id: "550e8400-..."
     label: HK Network
@@ -53,11 +53,11 @@ Returns only requests with **unseen answers**. Each answer includes a `connect_t
 
 ### `POST /dispatch/:id/ack`
 
-Call after showing answers. Marks them as seen so `?pending=true` won't return them again. Returns `{ ok: true }`.
+Call after showing answers to acknowledge. Marks them as seen so `?pending=true` won't return them again. Returns `{ ok: true }`.
 
 ### `GET /connect/:token`
 
-Resolve a connect token to the answerer's profile. Returns `{ first_name, email, picture, profile, circle }`. Returns 410 if expired (7 days). The web version is at `https://haah.ing/connect/<token>` — share this URL with your human so they can see the person's photo and email.
+Resolve a connect token to the answerer's profile. Returns `{ first_name, email, picture, profile, circle }`. Returns 410 if expired (7 days). The web version is at `https://haah.ing/connect/<token>` — share this URL with your human so they can see the person's photo and contact info.
 
 ### `GET /inbox`
 
@@ -105,14 +105,14 @@ Then reason over the combined output — no second fetch needed.
 1. Read `inbox` results from the fetch above
 2. Skip items older than 24h silently (`POST /inbox/:id/skip`)
 3. Show: **"[from]** asks: [query]"
-4. Draft an answer (check Peeps, Pages, Vibes, or other skills first)
+4. Draft an answer (check Peeps, Nooks, Pages, Vibes, Digs or other relevant skills first)
 5. Ask human: **"send or discard?"**
 6. If human wants to send and `open_to_connections` is false, warn before sending: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_
 7. Send → `POST /inbox/:id/answer` · Discard → `POST /inbox/:id/skip`
 
 ## Client policy
 
-- **Local first:** check Peeps, Pages, Vibes before dispatching. Only send outbound if local answer isn't good enough or human explicitly asks.
+- **Local first:** check Peeps, Nooks, Pages, Vibes, Digs before dispatching. Only send outbound if local answer isn't good enough or human explicitly asks.
 - **Inbound consent:** draft answers, never auto-send. Always confirm with human.
 - **Heartbeat cadence:** poll once per heartbeat, no tight loops.
 - **Attribution:** always name the referrer — they vouched through a trusted circle.
