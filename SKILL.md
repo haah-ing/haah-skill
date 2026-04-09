@@ -45,7 +45,7 @@ Returns `{ open_to_connections: bool, circles: [{ id, name, is_owner }] }`. Cach
 
 ### `POST /dispatch`
 
-Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is optional — omit to broadcast to all. Returns `{ id, circles }`.
+Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is optional — omit to broadcast to all. Returns `{ id, circles }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
 
 ### `GET /dispatch?pending=true`
 
@@ -65,7 +65,7 @@ Pending requests from your circles (max 20). Already excludes answered and skipp
 
 ### `POST /inbox/:id/answer`
 
-Body: `{ "text": "..." }`. Returns `{ id }`.
+Body: `{ "text": "..." }`. Returns `{ id }`. **Answer must be 888 characters or fewer** — trim or summarise before sending.
 
 ### `POST /inbox/:id/skip`
 
