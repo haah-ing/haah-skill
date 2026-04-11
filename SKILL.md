@@ -58,7 +58,7 @@ Cache `open_to_connections` alongside circles in `haahconfig.yml`.
 
 ### `POST /dispatch`
 
-Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is optional — omit to broadcast to all. Returns `{ id, circles }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
+Send a query. Body: `{ "query": "...", "circle_ids": ["..."], "poll": ["option1", "option2", ...] }`. `circle_ids` is optional — omit to broadcast to all. `poll` is optional — include to attach a structured vote (2–10 options, each ≤50 chars). Returns `{ id, circles }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
 
 ### `GET /heartbeat`
 
@@ -68,7 +68,7 @@ Send a query. Body: `{ "query": "...", "circle_ids": ["..."] }`. `circle_ids` is
 {
   messages: [
     { id, type: "answer", query, from_name, circle, text, created_at, connect_url? },
-    { id, type: "question", query, from_name, circle, created_at },
+    { id, type: "question", query, from_name, circle, created_at, poll?: string[] },
     { id, type: "dm", from_name, text, created_at }
   ],
   has_more: true,
@@ -88,7 +88,7 @@ Standalone version of the messages feed from `/heartbeat`. New messages across a
 
 ### `GET /messages/history`
 
-All recent messages regardless of read status (max 3, `?all=true` for up to 50). Includes `circles_hash`.
+All recent messages regardless of read status (max 3, `?all=true` for up to 50). Includes `circles_hash`. Messages from history can still be replied to via `POST /messages/:id/reply` — use this to let the human respond to recent threads they missed or want to revisit.
 
 ### `POST /messages/:id/reply`
 
@@ -155,10 +155,22 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 Walk through `messages` and handle each by `type`:
 
 - **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If the answer has a `connect_url`, offer: _"Want to connect with [from_name]?"_ and share the URL.
-- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". Draft an answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask human: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
+- **`type: "question"` from Publisher** — this is a publish consent vote, not a knowledge question. Parse the query body: it contains the original question and an anonymized summary separated by line breaks. Display them clearly:
+  > **Publisher** wants to publish this thread from [circle]:
+  > **Question:** "[original question]"
+  > **Summary:** "[anonymized synthesis]"
+  > _[N] people in your circle need to consent (2/3 majority, 24h window). Circle admins can veto._
+
+  Ask the human: **"YES or NO?"** Do not draft a free-form answer — only send `yes` or `no`. Do not consult Peeps, Nooks, or other local tools. If the human is a circle admin and answers NO, note: _"Your NO as a circle admin will veto publication immediately."_ Send → `POST /messages/:id/reply` with text `yes` or `no`.
+
+- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". If the message has a `poll` field, display the options as a numbered list and ask the human to pick one (or enter a free-form answer). Otherwise draft a full answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask human: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
 - **`type: "dm"`** — show: **"DM from [from_name]:** [text]". Ask: _"Want to reply?"_ If yes, draft and confirm: **"send or discard?"** Send → `POST /messages/:id/reply`.
 
 If `has_more` is true, tell the human: _"Want to see more?"_ and call `GET /messages?all=true`.
+
+### Replying to recent history
+
+If the human asks to revisit or reply to something they already saw, call `GET /messages/history?all=true` to fetch up to 50 recent messages (regardless of read status). Show them the same way as inbox messages. The human can reply to any of these — `POST /messages/:id/reply` works on history messages the same as inbox messages.
 
 ### Connecting with a message sender
 
