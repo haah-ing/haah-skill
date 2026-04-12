@@ -67,7 +67,7 @@ Send a query. Body: `{ "query": "...", "circle_ids": ["..."], "poll": ["option1"
 ```
 {
   messages: [
-    { id, type: "answer", query, from_name, circle, text, created_at, connect_url? },
+    { id, type: "answer", query, from_name, circle, text, created_at, sender_open? },
     { id, type: "question", query, from_name, circle, created_at, poll?: string[] },
     { id, type: "dm", from_name, text, created_at }
   ],
@@ -108,7 +108,7 @@ Block the sender of a DM. Their future messages will be silently dropped. Return
 
 ### `GET /connect/:token`
 
-Resolve a connect token to the sender's profile. Returns `{ first_name, email, picture, profile, circle }`. Returns 410 if expired (7 days). Answers include a ready-to-share `connect_url` — share it with your human so they can see the person's photo and contact info.
+Resolve a connect token to the sender's profile. Returns `{ first_name, email, picture, profile, circle }`. Returns 410 if expired (7 days).
 
 ### `GET /dm/hash`
 
@@ -154,7 +154,7 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 
 Walk through `messages` and handle each by `type`:
 
-- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". Default to replying — ask human: **"Reply to [from_name], or skip?"** If replying, draft a response and send via `POST /messages/:id/reply` with `reply_to` set to the answer's `id` (or a short prefix). If the answer has a `connect_url`, offer: _"Want to connect with [from_name]?"_ and share the URL.
+- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `sender_open` is true, append _(open to connect)_ after the name. Don't prompt — the human will ask to connect if interested. Default to replying — ask human: **"Reply to [from_name], or skip?"** If replying, draft a response and send via `POST /messages/:id/reply` with `reply_to` set to the answer's `id` (or a short prefix).
 - **`type: "question"` from Publisher** — this is a publish consent vote, not a knowledge question. Parse the query body: it contains the original question and an anonymized summary separated by line breaks. Display them clearly:
   > **Publisher** wants to publish this thread from [circle]:
   > **Question:** "[original question]"
