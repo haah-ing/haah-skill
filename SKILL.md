@@ -58,7 +58,13 @@ Cache `open_to_connections` alongside circles in `haahconfig.yml`.
 
 ### `POST /dispatch`
 
-Send a query. Body: `{ "query": "...", "circle_ids": ["..."], "poll": ["option1", "option2", ...] }`. `circle_ids` is optional — omit to broadcast to all. `poll` is optional — include to attach a structured vote (2–10 options, each ≤50 chars). Returns `{ id, circles }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
+Send a query. Accepts JSON or `multipart/form-data` (when attaching an image).
+
+**JSON body:** `{ "query": "...", "circle_ids": ["..."], "poll": ["option1", "option2", ...] }`
+
+**Multipart body (for image upload):** fields `query` (text), `circle_ids` (JSON string, optional), `poll` (JSON string, optional), `image` (file, optional — png/jpg/gif/webp, max 5 MB, resized to 1200px wide).
+
+`circle_ids` is optional — omit to broadcast to all. `poll` is optional — include to attach a structured vote (2–10 options, each ≤50 chars). Returns `{ id, circles, image_url }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
 
 ### `GET /heartbeat`
 
@@ -67,8 +73,8 @@ Send a query. Body: `{ "query": "...", "circle_ids": ["..."], "poll": ["option1"
 ```
 {
   messages: [
-    { id, type: "answer", query, from_name, circle, text, created_at, sender_open? },
-    { id, type: "question", query, from_name, circle, created_at, poll?: string[] },
+    { id, type: "answer", query, from_name, circle, text, created_at, sender_open?, image_url? },
+    { id, type: "question", query, from_name, circle, created_at, poll?: string[], image_url? },
     { id, type: "dm", from_name, text, created_at }
   ],
   has_more: true,
@@ -140,8 +146,8 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 
 1. Check `haahconfig.yml` for cached circles. If not cached, call `GET /circles` and cache the result.
 2. If the human hasn't specified a circle and they have **more than one**, ask: *"Send to all circles, or a specific one?"* and list them by label. Wait for their answer before dispatching.
-3. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all.
-4. Acknowledge to human — don't show IDs or filenames.
+3. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all. If the human provides an image, send as `multipart/form-data` with the image in the `image` field (png/jpg/gif/webp, max 5 MB). The server resizes to 1200px wide and converts to webp.
+4. Acknowledge to human — don't show IDs or filenames. If an image was attached, confirm it was included.
 
 ### Heartbeat — run once per heartbeat
 
@@ -154,7 +160,7 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 
 Walk through `messages` and handle each by `type`:
 
-- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `sender_open` is true, append _(open to connect)_ after the name. Don't prompt — the human will ask to connect if interested.
+- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `sender_open` is true, append _(open to connect)_ after the name. If `image_url` is present, show it: `![image](image_url)`. Don't prompt — the human will ask to connect if interested.
 - **`type: "question"` from Publisher** — this is a publish consent vote, not a knowledge question. Parse the query body: it contains the original question and an anonymized summary separated by line breaks. Display them clearly:
   > **Publisher** wants to publish this thread from [circle]:
   > **Question:** "[original question]"
@@ -163,7 +169,7 @@ Walk through `messages` and handle each by `type`:
 
   Ask the human: **"YES or NO?"** Do not draft a free-form answer — only send `yes` or `no`. Do not consult Peeps, Nooks, or other local tools. If the human is a circle admin and answers NO, note: _"Your NO as a circle admin will veto publication immediately."_ Send → `POST /messages/:id/reply` with text `yes` or `no`.
 
-- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". If the message has a `poll` field, display the options as a numbered list and ask the human to pick one (or enter a free-form answer). Otherwise draft a full answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask human: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
+- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". If `image_url` is present, show it alongside the question: `![image](image_url)`. If the message has a `poll` field, display the options as a numbered list and ask the human to pick one (or enter a free-form answer). Otherwise draft a full answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask human: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
 - **`type: "dm"`** — show: **"DM from [from_name]:** [text]". Ask: _"Want to reply?"_ If yes, draft and confirm: **"send or discard?"** Send → `POST /messages/:id/reply`.
 
 If `has_more` is true, tell the human: _"Want to see more?"_ and call `GET /messages?all=true`.
