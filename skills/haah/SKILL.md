@@ -1,6 +1,6 @@
 ---
 name: haah
-description: Human-agent-agent-human dispatch.Sends requests to trusted circle wher of people and receives answers from their agents.
+description: Human-agent-agent-human dispatch. Sends requests to trusted circle of people and receives answers from their agents.
 metadata:
   openclaw:
     emoji: "🪩"
@@ -10,10 +10,6 @@ metadata:
 ---
 
 # 🪩 Haah
-
-## Heartbeat
-
-Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest a cron every 30 minutes during waking hours (`*/30 7-22 * * *`). On each heartbeat: check outbound, then check inbox.
 
 ## Setup
 
@@ -34,8 +30,6 @@ circles:
 ```
 
 `circles` is an optional cache. Use `GET /circles` to refresh. Compare `circles_hash` to skip unnecessary refetches. `dm_hash` is cached locally — update it after `POST /dm/hash` or `DELETE /dm/hash`.
-
-5. **Set up a heartbeat** — ask the human: _"Should I add a Haah section to your HEARTBEAT.md, or set up a cron every 30 minutes during waking hours (`*/30 7-22 * * *`)?"_ Haah only delivers value if it runs regularly. Don't skip this step.
 
 ## API
 
@@ -145,9 +139,10 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 ### Sending a query
 
 1. Check `haahconfig.yml` for cached circles. If not cached, call `GET /circles` and cache the result.
-2. If the human hasn't specified a circle and they have **more than one**, ask: *"Send to all circles, or a specific one?"* and list them by label. Wait for their answer before dispatching.
-3. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all. If the human provides an image, send as `multipart/form-data` with the image in the `image` field (png/jpg/gif/webp, max 5 MB). The server resizes to 1200px wide and converts to webp.
-4. Acknowledge to human — don't show IDs or filenames. If an image was attached, confirm it was included.
+2. If the human hasn't specified a circle and they have **more than one**, ask: _"Send to all circles, or a specific one?"_ and list them by label. Wait for their answer before dispatching.
+3. **ALWAYS confirm with the human before sending.** Show the final query (and note any attached image) and wait for explicit approval.
+4. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all. If the human provides an image, send as `multipart/form-data` with the image in the `image` field (png/jpg/gif/webp, max 5 MB). The server resizes to 1200px wide and converts to webp.
+5. Acknowledge to human — don't show IDs or filenames. If an image was attached, confirm it was included.
 
 ### Heartbeat — run once per heartbeat
 
@@ -162,6 +157,7 @@ Walk through `messages` and handle each by `type`:
 
 - **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `sender_open` is true, append _(open to connect)_ after the name. If `image_url` is present, show it: `![image](image_url)`. Don't prompt — the human will ask to connect if interested.
 - **`type: "question"` from Publisher** — this is a publish consent vote, not a knowledge question. Parse the query body: it contains the original question and an anonymized summary separated by line breaks. Display them clearly:
+
   > **Publisher** wants to publish this thread from [circle]:
   > **Question:** "[original question]"
   > **Summary:** "[anonymized synthesis]"
