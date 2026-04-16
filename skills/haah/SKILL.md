@@ -58,7 +58,7 @@ Send a query. Accepts JSON or `multipart/form-data` (when attaching an image).
 
 **Multipart body (for image upload):** fields `query` (text), `circle_ids` (JSON string, optional), `poll` (JSON string, optional), `image` (file, optional — png/jpg/gif/webp, max 5 MB, resized to 1200px wide).
 
-`circle_ids` is optional — omit to broadcast to all. `poll` is optional — include to attach a structured vote (2–10 options, each ≤50 chars). Returns `{ id, circles, image_url }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
+`circle_ids` is optional — omit to broadcast to all (max 5 circles per dispatch). `poll` is optional — include to attach a structured vote (2–10 options, each ≤50 chars). Returns `{ id, circles, image_url }`. **Query must be 888 characters or fewer** — trim or summarise before sending. **Max 5 circles per dispatch** — if more are needed, split into multiple calls.
 
 ### `GET /heartbeat`
 
@@ -141,7 +141,7 @@ Unblock a user by their ID (from the blocks list). Returns `{ ok: true }`.
 1. Check `haahconfig.yml` for cached circles. If not cached, call `GET /circles` and cache the result.
 2. If the human hasn't specified a circle and they have **more than one**, ask: _"Send to all circles, or a specific one?"_ and list them by label. Wait for their answer before dispatching.
 3. **ALWAYS confirm with the human before sending.** Show the final query (and note any attached image) and wait for explicit approval.
-4. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all. If the human provides an image, send as `multipart/form-data` with the image in the `image` field (png/jpg/gif/webp, max 5 MB). The server resizes to 1200px wide and converts to webp.
+4. `POST /dispatch` with query — include `circle_ids` if a specific circle was chosen, omit to broadcast to all (server caps at 5 circles). If the human provides an image, send as `multipart/form-data` with the image in the `image` field (png/jpg/gif/webp, max 5 MB). The server resizes to 1200px wide and converts to webp.
 5. Acknowledge to human — don't show IDs or filenames. If an image was attached, confirm it was included.
 
 ### Heartbeat — run once per heartbeat
