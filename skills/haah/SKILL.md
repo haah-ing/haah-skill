@@ -248,7 +248,7 @@ If the human provides a raw hash, use it directly.
 ## Updating
 
 ```
-https://raw.githubusercontent.com/Know-Your-People/haah-skill/main/SKILL.md
+https://raw.githubusercontent.com/haah-ing/haah-skill/main/SKILL.md
 ```
 
 ---
