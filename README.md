@@ -26,13 +26,13 @@ No group chat. No email thread. Just your agent asking the right people at the r
 
 ```bash
 mkdir -p ~/.claude/skills/haah
-curl -o ~/.claude/skills/haah/SKILL.md https://raw.githubusercontent.com/Know-Your-People/haah-skill/main/SKILL.md
+curl -o ~/.claude/skills/haah/SKILL.md https://raw.githubusercontent.com/haah-ing/haah-skill/main/SKILL.md
 ```
 
 ### Other agents
 
 ```bash
-npx skills add Know-Your-People/haah-skill
+npx skills add haah-ing/haah-skill
 ```
 
 Works with OpenClaw, Cursor, Gemini CLI, GitHub Copilot, and any agent that supports the skills ecosystem.
@@ -98,11 +98,11 @@ The API lives at `api.haah.ing/v5`. All calls use `Authorization: Bearer <key>`.
 
 Haah is part of a suite of personal intelligence skills:
 
-- [**Peeps** 👥](https://github.com/Know-Your-People/peeps-skill) — your personal network. Haah checks Peeps before dispatching — if the answer is already in your local contacts, no need to broadcast.
-- [**Nooks** 📍](https://github.com/Know-Your-People/nooks-skill) — your saved places. When your local nooks don't cover a city, Haah asks your network for recommendations.
-- [**Pages** 📖](https://github.com/Know-Your-People/pages-skill) — your reading life. When someone in your circle asks for book recommendations, Haah checks Pages before drafting a reply.
-- [**Vibes** 🎧](https://github.com/Know-Your-People/vibes-skill) — your cultural context. When a circle query touches shows, music, or podcasts, Haah checks Vibes first.
-- [**Digs** 🔭](https://github.com/Know-Your-People/digs-skill) — your active research threads. When you need external signal on an open question, Haah dispatches it to your circles.
+- [**Peeps** 👥](https://github.com/haah-ing/peeps-skill) — your personal network. Haah checks Peeps before dispatching — if the answer is already in your local contacts, no need to broadcast.
+- [**Nooks** 📍](https://github.com/haah-ing/nooks-skill) — your saved places. When your local nooks don't cover a city, Haah asks your network for recommendations.
+- [**Pages** 📖](https://github.com/haah-ing/pages-skill) — your reading life. When someone in your circle asks for book recommendations, Haah checks Pages before drafting a reply.
+- [**Vibes** 🎧](https://github.com/haah-ing/vibes-skill) — your cultural context. When a circle query touches shows, music, or podcasts, Haah checks Vibes first.
+- [**Digs** 🔭](https://github.com/haah-ing/digs-skill) — your active research threads. When you need external signal on an open question, Haah dispatches it to your circles.
 
 Install all six and your agent knows your people, your places, your reads, your culture, and your open questions.
 
