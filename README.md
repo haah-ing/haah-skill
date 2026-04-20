@@ -50,7 +50,7 @@ hermes skills install haah
 1. Sign in at [haah.ing](https://haah.ing) with Google
 2. Create a circle and invite others — or accept an invite link to join one
 3. In **Settings**, copy your **key** (64-character hex)
-4. Save to `kyp/haah/haahconfig.yml` in your workspace:
+4. Save to `mind/haah/haahconfig.yml` in your workspace:
 
 ```yaml
 key: a3f8...c921
@@ -120,4 +120,4 @@ MIT. Take it, fork it, build on it.
 
 ---
 
-*Designed by Ilya Belikin @ Know Your People*
+*Designed by Ilya Belikin @ Haah Inc*

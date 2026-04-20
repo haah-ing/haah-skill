@@ -20,7 +20,7 @@ Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest
 1. Sign in at [haah.ing](https://haah.ing) with Google
 2. Create a circle and invite others (or accept an invite)
 3. In **Settings**, copy your **key** (64 hex chars)
-4. Save to `kyp/haah/haahconfig.yml` — agent state, nothing else:
+4. Save to `mind/haah/haahconfig.yml` — agent state, nothing else:
 
    ```yaml
    key: a3f8...c921
@@ -32,8 +32,8 @@ Add a `Haah dispatch` section to HEARTBEAT.md (ask permission first), or suggest
 
 Two sibling files get auto-populated on first use and then kept fresh by the heartbeat:
 
-- **`kyp/haah/haah_circles.yml`** — your circle list + `circles_hash` fingerprint
-- **`kyp/haah/haah_dms.yml`** — your DM address book + `contacts_hash` fingerprint
+- **`mind/haah/haah_circles.yml`** — your circle list + `circles_hash` fingerprint
+- **`mind/haah/haah_dms.yml`** — your DM address book + `contacts_hash` fingerprint
 
 Both are pure caches written from the corresponding `GET` response. Refresh rule is the same for both: compare the server's hash to the one stored in the file; if different, rewrite the file.
 
