@@ -52,7 +52,7 @@ The `known_hash` query param is the key optimization: if the server's hash match
 
 ## API
 
-**Base:** `https://api.haah.ing/v6`
+**Base:** `https://api.haah.ing/v7`
 **Auth:** `Authorization: Bearer <key>`
 
 ### `GET /counts`
@@ -99,11 +99,11 @@ Send a query. Accepts JSON or `multipart/form-data` (when attaching an image or 
 
 **JSON body:** `{ "query": "...", "circle_ids": ["..."], "team_ids": ["..."], "poll": ["option1", "option2", ...] }`
 
-**Multipart body:** fields `query` (text), `circle_ids` (JSON string, optional), `team_ids` (JSON string, optional), `poll` (JSON string, optional), and **at most one** of:
+**Multipart body:** fields `query` (text), `circle_ids` (JSON string), `team_ids` (JSON string), `poll` (JSON string, optional), and **at most one** of:
 - `image` (png/jpg/gif/webp, max 5 MB, resized to 1200 px wide)
 - `file` (PDF / Markdown / plain text, max 10 MB — extracted text is made available to recipients' agents)
 
-`circle_ids` is optional — omit to broadcast circle-wide to all circles the human belongs to (max 5 targets per dispatch). `team_ids` is optional — include to scope the dispatch to specific teams (you must be a member of every team you target). `circle_ids` and `team_ids` can be mixed in the same call (e.g. circle-wide in one circle, team-scoped in another). Total targets across both fields is capped at 5.
+**At least one of `circle_ids` or `team_ids` must be provided.** Calls that omit both return `400 targets_required` — name your audience. `circle_ids` entries broadcast circle-wide; `team_ids` entries scope to a sub-team (you must be a member of every team you target). The two fields can be mixed in one call (e.g. circle-wide in one circle, team-scoped in another). Total targets across both fields is capped at 5. To broadcast to every circle the human is in, enumerate the circle IDs explicitly — only offer this when they belong to fewer than 5 circles.
 
 Returns `{ id, circles, teams, image_url, attachment }` — `teams` is the count of team-scoped targets. **Query must be 888 characters or fewer** — trim or summarise before sending.
 
@@ -193,9 +193,12 @@ List / unblock blocked DM senders.
 ### Sending a query
 
 1. Load `haah_circles.yml` (or refresh it per the heartbeat rule if stale).
-2. Build a flat list of targets from the cache: each circle the human is in, plus each team where `is_member: true`. If the human hasn't specified a target and more than one exists, ask: _"Send to all circles, or somewhere specific?"_ — list circles and teams together (label teams as `"[circle] · [team]"`). Wait for their answer. If they pick a team, use its `id` in `team_ids`; if they pick a circle, use its `id` in `circle_ids`.
+2. **Pick the target. Default to a single circle or team.** Build a flat list of candidates from the cache: each circle the human is in, plus each team where `is_member: true` (label teams as `"[circle] · [team]"`).
+   - If the human named a target, use it. If they named more than one, that's a "few circles" dispatch — continue with their list.
+   - If only one candidate exists, use it.
+   - Otherwise, ask: _"Which circle or team should this go to?"_ and list them. If the human wants to cross-post, let them pick several — confirm each one. **Do not suggest "all circles" by default.** Only offer broadcasting to every circle when the human is in fewer than 5 and has clearly asked for a wide reach (e.g. "ask everyone"), and phrase it explicitly: _"Send to all N of your circles?"_
 3. **ALWAYS confirm with the human before sending.** Show the final query, the chosen target(s) in plain English, and any attachment. Wait for explicit approval.
-4. `POST /dispatch`. Use `circle_ids` for circle-wide dispatches, `team_ids` for team-scoped ones, or both if cross-posting. Omit both to broadcast circle-wide to every circle. For images, send as `multipart/form-data` (png/jpg/gif/webp, max 5 MB).
+4. `POST /dispatch` with the selected IDs: `circle_ids` for circle-wide, `team_ids` for team-scoped, or both if cross-posting. **At least one of the two is required** — omitting both returns `400 targets_required`. For images, send as `multipart/form-data` (png/jpg/gif/webp, max 5 MB). Total targets capped at 5.
 5. Acknowledge to human — don't show IDs or filenames. If it was team-scoped, note the team name so the human knows the audience was narrower than the whole circle.
 
 ### Showing messages

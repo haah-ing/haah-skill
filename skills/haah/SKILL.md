@@ -52,7 +52,7 @@ The `known_hash` query param is the key optimization: if the server's hash match
 
 ## API
 
-**Base:** `https://api.haah.ing/v6`
+**Base:** `https://api.haah.ing/v7`
 **Auth:** `Authorization: Bearer <key>`
 
 ### `GET /counts`
@@ -67,12 +67,13 @@ Call this first on every sync tick. It is the cheapest path to "is there anythin
 
 ### `GET /circles`
 
-Returns `{ open_to_connections, circles_hash, circles: [{ id, name, slug, is_owner, trending }] }`.
+Returns `{ open_to_connections, circles_hash, circles: [{ id, name, slug, is_owner, trending, teams: [{ id, name, is_member }] }] }`.
 
 **Conditional fetch:** pass `?known_hash=<8-hex>` with the value you last wrote to `haah_circles.yml`. If unchanged, the server returns `{ unchanged: true, circles_hash, open_to_connections }` — no circle list re-sent.
 
 - **`slug`** — custom URL slug (nullable). Use for links: `https://haah.ing/c/<slug>`.
 - **`trending`** — `true` if the circle is on the public trending page. Mention it to the human: _"Your circle X is trending right now! haah.ing/c/slug"_
+- **`teams`** — sub-groups inside this circle. Each team's `is_member` is `true` if the human belongs to it. Teams the human is in are valid dispatch targets (see `POST /dispatch` `team_ids`). Teams they're NOT in still appear here for context — team-scoped dispatches are visible in the human's web activity feed, but only team members receive them for active reply. `circles_hash` invalidates when teams are created, renamed, deleted, or when the human joins/leaves a team.
 
 ### `GET /contacts`
 
@@ -96,13 +97,15 @@ List all members of a circle. Returns `{ members: [{ first_name, last_name, bio,
 
 Send a query. Accepts JSON or `multipart/form-data` (when attaching an image or a document).
 
-**JSON body:** `{ "query": "...", "circle_ids": ["..."], "poll": ["option1", "option2", ...] }`
+**JSON body:** `{ "query": "...", "circle_ids": ["..."], "team_ids": ["..."], "poll": ["option1", "option2", ...] }`
 
-**Multipart body:** fields `query` (text), `circle_ids` (JSON string, optional), `poll` (JSON string, optional), and **at most one** of:
+**Multipart body:** fields `query` (text), `circle_ids` (JSON string), `team_ids` (JSON string), `poll` (JSON string, optional), and **at most one** of:
 - `image` (png/jpg/gif/webp, max 5 MB, resized to 1200 px wide)
 - `file` (PDF / Markdown / plain text, max 10 MB — extracted text is made available to recipients' agents)
 
-`circle_ids` is optional — omit to broadcast to all (max 5 circles per dispatch). Returns `{ id, circles, image_url, attachment }`. **Query must be 888 characters or fewer** — trim or summarise before sending.
+**At least one of `circle_ids` or `team_ids` must be provided.** Calls that omit both return `400 targets_required` — name your audience. `circle_ids` entries broadcast circle-wide; `team_ids` entries scope to a sub-team (you must be a member of every team you target). The two fields can be mixed in one call (e.g. circle-wide in one circle, team-scoped in another). Total targets across both fields is capped at 5. To broadcast to every circle the human is in, enumerate the circle IDs explicitly — only offer this when they belong to fewer than 5 circles.
+
+Returns `{ id, circles, teams, image_url, attachment }` — `teams` is the count of team-scoped targets. **Query must be 888 characters or fewer** — trim or summarise before sending.
 
 ### `GET /messages`
 
@@ -111,8 +114,8 @@ Unified feed of new messages, auto-marked as read. Use when `/counts` shows unre
 ```
 {
   messages: [
-    { id, type: "answer", query, from_name, circle, text, created_at, sender_open?, image_url? },
-    { id, type: "question", query, from_name, circle, created_at, poll?: string[], image_url? },
+    { id, type: "answer", query, from_name, circle, team?, text, created_at, sender_open?, image_url? },
+    { id, type: "question", query, from_name, circle, team?, created_at, poll?: string[], image_url? },
     { id, type: "dm", from_name, text, created_at }
   ],
   has_more: true,
@@ -123,6 +126,7 @@ Unified feed of new messages, auto-marked as read. Use when `/counts` shows unre
 - **`?limit=N`** — default 3, max 50. Sorted by `created_at` descending.
 - **`has_more`** — if true, tell the human _"Want to see more?"_ and call `GET /messages?limit=50`.
 - **`circles_hash`** — if it differs from `haah_circles.yml`, refresh.
+- **`team`** — set on questions & answers that were scoped to a sub-team inside the circle. When present, surface it to the human in the format `"[from_name] (via [circle] · [team])"` so they know the audience is narrower than the whole circle. Only team members receive these messages, so you'll only see them when the human belongs to the team.
 
 ### `GET /messages/history`
 
@@ -189,16 +193,19 @@ List / unblock blocked DM senders.
 ### Sending a query
 
 1. Load `haah_circles.yml` (or refresh it per the heartbeat rule if stale).
-2. If the human hasn't specified a circle and they have **more than one**, ask: _"Send to all circles, or a specific one?"_ and list them by label. Wait for their answer.
-3. **ALWAYS confirm with the human before sending.** Show the final query (and note any attached image) and wait for explicit approval.
-4. `POST /dispatch`. Include `circle_ids` if specific, omit to broadcast. For images, send as `multipart/form-data` (png/jpg/gif/webp, max 5 MB).
-5. Acknowledge to human — don't show IDs or filenames.
+2. **Pick the target. Default to a single circle or team.** Build a flat list of candidates from the cache: each circle the human is in, plus each team where `is_member: true` (label teams as `"[circle] · [team]"`).
+   - If the human named a target, use it. If they named more than one, that's a "few circles" dispatch — continue with their list.
+   - If only one candidate exists, use it.
+   - Otherwise, ask: _"Which circle or team should this go to?"_ and list them. If the human wants to cross-post, let them pick several — confirm each one. **Do not suggest "all circles" by default.** Only offer broadcasting to every circle when the human is in fewer than 5 and has clearly asked for a wide reach (e.g. "ask everyone"), and phrase it explicitly: _"Send to all N of your circles?"_
+3. **ALWAYS confirm with the human before sending.** Show the final query, the chosen target(s) in plain English, and any attachment. Wait for explicit approval.
+4. `POST /dispatch` with the selected IDs: `circle_ids` for circle-wide, `team_ids` for team-scoped, or both if cross-posting. **At least one of the two is required** — omitting both returns `400 targets_required`. For images, send as `multipart/form-data` (png/jpg/gif/webp, max 5 MB). Total targets capped at 5.
+5. Acknowledge to human — don't show IDs or filenames. If it was team-scoped, note the team name so the human knows the audience was narrower than the whole circle.
 
 ### Showing messages
 
 Walk through `messages` and handle each by `type`:
 
-- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `sender_open` is true, append _(open to connect)_ after the name. If `image_url`, show it: `![image](image_url)`. Don't prompt — the human will ask to connect if interested.
+- **`type: "answer"`** — show: **"[from_name] (via [circle]):** [text]". If `team` is set, format the label as **"(via [circle] · [team])"** so the human knows the thread was team-scoped. If `sender_open` is true, append _(open to connect)_ after the name. If `image_url`, show it: `![image](image_url)`. Don't prompt — the human will ask to connect if interested.
 - **`type: "question"` from Publisher** — this is a publish consent vote, not a knowledge question. Parse the query body: original question + anonymized summary, separated by line breaks.
 
   > **Publisher** wants to publish this thread from [circle]:
@@ -208,7 +215,7 @@ Walk through `messages` and handle each by `type`:
 
   Ask: **"YES or NO?"** Send only `yes` or `no`. Don't consult Peeps, Nooks, or other local tools for this. If the human is a circle admin and answers NO, note: _"Your NO as a circle admin will veto publication immediately."_ Send → `POST /messages/:id/reply`.
 
-- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". If `image_url`, show it. If the message has a `poll`, display options as a numbered list and ask the human to pick. Otherwise draft a full answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
+- **`type: "question"`** — show: **"[from_name]** (via [circle]) asks: [query]". If `team` is set, format the label as **"(via [circle] · [team])"** — the human is receiving this because they're in that team. If `image_url`, show it. If the message has a `poll`, display options as a numbered list and ask the human to pick. Otherwise draft a full answer (check Peeps, Nooks, Pages, Vibes, Digs first). Ask: **"send or discard?"** If sending and `open_to_connections` is false, warn: _"Your profile is closed — the asker won't get a link to connect with you. Open up at haah.ing/profile, or send anyway?"_ Send → `POST /messages/:id/reply` · Discard → `POST /messages/:id/pass`
 - **`type: "dm"`** — show: **"DM from [from_name]:** [text]". Ask: _"Want to reply?"_ If yes, draft, confirm, and `POST /messages/:id/reply`.
 
 If `has_more` is true: _"Want to see more?"_ → `GET /messages?all=true`.
