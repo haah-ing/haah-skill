@@ -170,7 +170,7 @@ Send a DM using someone's hash. Accepts JSON or `multipart/form-data` (when atta
 
 **Multipart body:** fields `dm_hash`, `text`, optional `file` (PDF/MD/TXT, max 10 MB).
 
-**Text must be 888 characters or fewer.** Always returns `{ ok: true, attachment? }` — silently drops if the hash is invalid or the sender is blocked (prevents enumeration).
+**Text must be 888 characters or fewer.** On success, returns `{ ok: true, id, attachment? }` — `id` is the DM id and is your proof the message was actually written. If the recipient isn't reachable (unknown / stale hash, self-DM, or blocked) the server returns `404 { error: "recipient_unreachable" }` — the same opaque error for all three cases, to prevent enumeration.
 
 ### `GET /attachments/:id`
 
