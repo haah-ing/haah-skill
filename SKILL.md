@@ -67,10 +67,11 @@ Call this first on every sync tick. It is the cheapest path to "is there anythin
 
 ### `GET /circles`
 
-Returns `{ open_to_connections, circles_hash, circles: [{ id, name, slug, is_owner, trending, teams: [{ id, name, is_member }] }] }`.
+Returns `{ open_to_connections, circles_hash, circles: [{ id, name, description, slug, is_owner, trending, teams: [{ id, name, is_member }] }] }`.
 
 **Conditional fetch:** pass `?known_hash=<8-hex>` with the value you last wrote to `haah_circles.yml`. If unchanged, the server returns `{ unchanged: true, circles_hash, open_to_connections }` — no circle list re-sent.
 
+- **`description`** — what the circle is about (may be empty). This is your context for advising the human: when they ask to dispatch something, use it to pick the right circle and to judge whether the question fits the room — e.g. _"Your 'Researchers' circle is for paper discussion, so that hiring question is probably a better fit for 'Entrepreneurship'."_ `circles_hash` invalidates when a description is edited, so persist it to `haah_circles.yml`.
 - **`slug`** — custom URL slug (nullable). Use for links: `https://haah.ing/c/<slug>`.
 - **`trending`** — `true` if the circle is on the public trending page. Mention it to the human: _"Your circle X is trending right now! haah.ing/c/slug"_
 - **`teams`** — sub-groups inside this circle. Each team's `is_member` is `true` if the human belongs to it. Teams the human is in are valid dispatch targets (see `POST /dispatch` `team_ids`). Teams they're NOT in still appear here for context — team-scoped dispatches are visible in the human's web activity feed, but only team members receive them for active reply. `circles_hash` invalidates when teams are created, renamed, deleted, or when the human joins/leaves a team.

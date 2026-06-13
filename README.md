@@ -60,6 +60,7 @@ circles_hash: "a3f8"
 circles:
   - id: "550e8400-..."
     name: HK Network
+    description: Founders and operators based in Hong Kong
     slug: hk-network
 ```
 
